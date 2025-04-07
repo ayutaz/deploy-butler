@@ -9,7 +9,7 @@ env:
   UNITY_VERSION: '6000.0.43f1'
 
 jobs:
-  build-and-deploy:
+  build:
     name: Build & Deploy ${{ matrix.targetPlatform }}
     strategy:
       fail-fast: false
