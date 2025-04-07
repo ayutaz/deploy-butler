@@ -1,7 +1,9 @@
-# UnityTemplateRepository
-Unity Project template Repository
-
-# Demo
+# Deploy to butler
+Unityのビルドをbutlerにデプロイするためのテストプロジェクト
+* Windows
+* Linux
+* Max
+* Android
 
 # requirements
-* Unity 2022.2.0f1
+* Unity 6000.0.43f1
