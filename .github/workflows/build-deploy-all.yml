@@ -1,0 +1,89 @@
+﻿name: Build and Deploy All Platforms to itch.io
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  UNITY_VERSION: '6000.0.43f1'
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy ${{ matrix.targetPlatform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Windows 64bit
+          - targetPlatform: StandaloneWindows64
+            os: ubuntu-latest # Ubuntuランナーでビルド可能
+            itch_channel: windows-x64 # itch.io チャンネル名 (任意)
+            artifact_suffix: win64
+          # macOS Universal (Intel + Apple Silicon)
+          - targetPlatform: StandaloneOSX
+            os: macos-latest # macOSランナーが必要
+            itch_channel: osx-universal # itch.io チャンネル名 (任意)
+            artifact_suffix: osx
+          # Linux 64bit
+          - targetPlatform: StandaloneLinux64
+            os: ubuntu-latest # Ubuntuランナーでビルド可能
+            itch_channel: linux-x64 # itch.io チャンネル名 (任意)
+            artifact_suffix: linux64
+          # WebGL
+          - targetPlatform: WebGL
+            os: ubuntu-latest # Ubuntuランナーでビルド可能
+            itch_channel: webgl # itch.io チャンネル名 (任意)
+            artifact_suffix: webgl
+          # Android
+          - targetPlatform: Android
+            os: ubuntu-latest # Ubuntuランナーでビルド可能 (GameCIがSDK/NDKを処理)
+            itch_channel: android # itch.io チャンネル名 (任意)
+            artifact_suffix: android
+
+    # Matrixで指定されたOSランナーを使用
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+        with:
+          lfs: true
+
+      - name: Cache Unity Library folder
+        uses: actions/cache@v4.2.0
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ matrix.targetPlatform }}-
+
+      # 4. Unityプロジェクトのビルド (GameCIを使用)
+      - name: Build Unity project for ${{ matrix.targetPlatform }}
+        id: build
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEY_ALIAS_NAME: ${{ secrets.ANDROID_KEY_ALIAS_NAME }}
+          ANDROID_KEY_ALIAS_PASS: ${{ secrets.ANDROID_KEY_ALIAS_PASS }}
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+
+      - name: Upload build to itch.io (${{ matrix.itch_channel }})
+        uses: yeslayla/butler-publish-itchio-action@v1.0.3
+        env:
+          BUTLER_CREDENTIALS: ${{ secrets.ITCHIO_API_KEY }}
+          CHANNEL: ${{ matrix.itch_channel }}
+          ITCH_GAME: your-game-name
+          ITCH_USER: your-itchio-username
+          PACKAGE: Build/${{ matrix.targetPlatform }}
+
+      - name: Upload build artifact (for debugging/download)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-${{ matrix.artifact_suffix }}-${{ github.sha }}
+          path: Build/${{ matrix.targetPlatform }}
+          retention-days: 7 # 7日間に設定
