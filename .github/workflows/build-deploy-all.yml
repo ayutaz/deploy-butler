@@ -70,6 +70,38 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ matrix.targetPlatform }}
 
+      - name: Upload build artifact (${{ matrix.targetPlatform }})
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}
+          retention-days: 1
+
+  deploy:
+    name: Deploy All to itch.io
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - targetPlatform: StandaloneWindows64
+            itch_channel: windows-x64
+          - targetPlatform: StandaloneOSX
+            itch_channel: osx-universal
+          - targetPlatform: StandaloneLinux64
+            itch_channel: linux-x64
+          - targetPlatform: WebGL
+            itch_channel: webgl
+          - targetPlatform: Android
+            itch_channel: android
+    steps:
+      - name: Download build artifact (${{ matrix.targetPlatform }})
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}
+  
       - name: Upload build to itch.io (${{ matrix.itch_channel }})
         uses: yeslayla/butler-publish-itchio-action@v1.0.3
         env:
@@ -77,11 +109,4 @@ jobs:
           CHANNEL: ${{ matrix.itch_channel }}
           ITCH_GAME: dutlter-test
           ITCH_USER: ayousanz
-          PACKAGE: build/${{ matrix.targetPlatform }}
-
-      - name: Upload build artifact (for debugging/download)
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: Build-${{ matrix.artifact_suffix }}-${{ github.sha }}
-          path: Build/${{ matrix.targetPlatform }}
-          retention-days: 7
+          PACKAGE: build/${{ matrix.targetPlatform }} 
