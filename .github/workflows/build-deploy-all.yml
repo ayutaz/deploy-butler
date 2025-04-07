@@ -50,6 +50,54 @@ jobs:
         with:
           lfs: true
 
+      - name: Maximize Runner Disk Space
+        run: |
+          echo "Initial disk space:"
+          df -h
+
+          echo "Removing swap file..."
+          sudo swapoff -a
+          sudo rm -f /swapfile
+
+          echo "Removing large pre-installed tools..."
+          # .NET SDKs
+          sudo rm -rf /usr/share/dotnet
+          # Haskell (ghc)
+          sudo rm -rf /opt/ghc /usr/local/.ghcup
+          # Android SDK/NDK
+          sudo rm -rf /usr/local/lib/android
+          # CodeQL
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          # Swift
+          sudo rm -rf /usr/share/swift
+          # Go
+          sudo rm -rf /usr/local/go /opt/hostedtoolcache/go
+          # Java (OpenJDK)
+          sudo rm -rf /usr/lib/jvm/*
+          # Ruby tool cache and rvm
+          sudo rm -rf /opt/hostedtoolcache/Ruby /home/runner/.rvm
+          # Python tool cache (Leaving system Python intact, removing cached versions)
+          sudo rm -rf /opt/hostedtoolcache/Python
+
+          echo "Removing packages via apt..."
+          # Google Cloud SDK (Firebase CLIとは別)
+          sudo apt-get remove -y google-cloud-cli google-cloud-sdk || echo "gcloud not found or removal failed"
+          # PHP
+          sudo apt-get remove -y php\* || echo "PHP not found or removal failed"
+          # Browsers
+          sudo apt-get remove -y firefox google-chrome-stable || echo "Browsers not found or removal failed"
+
+          echo "Cleaning apt cache..."
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          echo "Performing extensive Docker system prune..."
+          # Keep Docker itself, but prune unused resources
+          sudo docker system prune --volumes -a -f
+
+          echo "Final disk space:"
+          df -h
+
       - name: Cache Unity Library folder
         uses: actions/cache@v4.2.0
         with:
