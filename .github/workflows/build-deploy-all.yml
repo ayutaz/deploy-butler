@@ -66,10 +66,6 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-          ANDROID_KEY_ALIAS_NAME: ${{ secrets.ANDROID_KEY_ALIAS_NAME }}
-          ANDROID_KEY_ALIAS_PASS: ${{ secrets.ANDROID_KEY_ALIAS_PASS }}
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ matrix.targetPlatform }}
@@ -79,13 +75,13 @@ jobs:
         env:
           BUTLER_CREDENTIALS: ${{ secrets.ITCHIO_API_KEY }}
           CHANNEL: ${{ matrix.itch_channel }}
-          ITCH_GAME: your-game-name
-          ITCH_USER: your-itchio-username
+          ITCH_GAME: dutlter-test
+          ITCH_USER: ayousanz
           PACKAGE: Build/${{ matrix.targetPlatform }}
 
       - name: Upload build artifact (for debugging/download)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: Build-${{ matrix.artifact_suffix }}-${{ github.sha }}
           path: Build/${{ matrix.targetPlatform }}
-          retention-days: 7 # 7日間に設定
+          retention-days: 7
