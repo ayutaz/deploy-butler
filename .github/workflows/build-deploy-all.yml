@@ -77,7 +77,7 @@ jobs:
           CHANNEL: ${{ matrix.itch_channel }}
           ITCH_GAME: dutlter-test
           ITCH_USER: ayousanz
-          PACKAGE: Build/${{ matrix.targetPlatform }}
+          PACKAGE: build/${{ matrix.targetPlatform }}
 
       - name: Upload build artifact (for debugging/download)
         uses: actions/upload-artifact@v4.6.2
