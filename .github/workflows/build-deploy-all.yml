@@ -51,6 +51,7 @@ jobs:
           lfs: true
 
       - name: Maximize Runner Disk Space
+        if: runner.os == 'Linux'
         run: |
           echo "Initial disk space:"
           df -h
