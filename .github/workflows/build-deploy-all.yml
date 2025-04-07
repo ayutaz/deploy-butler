@@ -61,9 +61,11 @@ jobs:
       # 4. Unityプロジェクトのビルド (GameCIを使用)
       - name: Build Unity project for ${{ matrix.targetPlatform }}
         id: build
-        uses: game-ci/unity-builder@v4
+        uses: game-ci/unity-builder@v4.3.0
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
           ANDROID_KEY_ALIAS_NAME: ${{ secrets.ANDROID_KEY_ALIAS_NAME }}
